@@ -611,7 +611,7 @@ Server will start on `http://localhost:5000`
 
 ## Database Structure
 
-The database (`backend/data/db.json`) contains:
+The backend stores application data in MongoDB collections managed through Mongoose:
 - **users**: Patient and doctor accounts
 - **reports**: ECG reports and analysis
 - **messages**: Patient-doctor communications
