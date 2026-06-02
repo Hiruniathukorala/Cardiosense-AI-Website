@@ -7,9 +7,8 @@
 ### AI-Powered Cardiovascular Health Monitoring System
 
 [![React](https://img.shields.io/badge/React-19.x-61DAFB?style=flat-square&logo=react)](https://react.dev)
-[![Flutter](https://img.shields.io/badge/Flutter-Dart-02569B?style=flat-square&logo=flutter)](https://flutter.dev)
 [![Node.js](https://img.shields.io/badge/Node.js-Backend-339933?style=flat-square&logo=node.js)](https://nodejs.org)
-[![Vite](https://img.shields.io/badge/Vite-Build-646CFF?style=flat-square&logo=vite)](https://vitejs.dev)
+[![MongoDB](https://img.shields.io/badge/MongoDB-Database-47A248?style=flat-square&logo=mongodb)](https://www.mongodb.com)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
 
 > Real-time ECG analysis · Arrhythmia detection · Personalized cardiac risk assessment
@@ -34,9 +33,9 @@
 
 ## 🌟 Overview
 
-**CardioSense AI** is a full-stack, AI-powered cardiovascular health monitoring platform designed to provide continuous, real-time insights into a user's cardiac health. The system combines a **Flutter mobile app** for data collection and patient interaction, a **React web dashboard** for clinician/admin views, and a **Node.js backend** with embedded AI models for ECG signal processing, arrhythmia classification, and risk scoring.
+**CardioSense AI** is a full-stack, AI-powered cardiovascular health monitoring platform designed to provide continuous, real-time insights into a user's cardiac health. The system combines a **React web dashboard** with a **Node.js backend** and **MongoDB database** for ECG signal processing, arrhythmia classification, and risk scoring.
 
-CardioSense bridges the gap between wearable health devices and actionable medical intelligence — empowering both patients and healthcare providers with timely, accurate cardiac analytics.
+CardioSense bridges the gap between clinical ECG data and actionable medical intelligence — empowering healthcare providers with timely, accurate cardiac analytics.
 
 ---
 
@@ -44,10 +43,9 @@ CardioSense bridges the gap between wearable health devices and actionable medic
 
 | Feature | Description |
 |---|---|
-| 🔴 **Real-Time ECG Analysis** | Continuous monitoring and visualization of electrocardiogram signals from connected wearables |
+| 🔴 **Real-Time ECG Analysis** | Continuous monitoring and visualization of electrocardiogram signals through the web dashboard |
 | ⚡ **Arrhythmia Detection** | AI-driven classification of cardiac irregularities including AFib, tachycardia, bradycardia, and PVCs |
 | 📊 **Cardiac Risk Assessment** | Personalized risk scoring based on ECG patterns, historical data, and patient profile |
-| 📱 **Mobile App (Flutter)** | Cross-platform iOS/Android app for patients to monitor vitals and receive alerts |
 | 🖥️ **Web Dashboard (React)** | Clinician-facing dashboard for reviewing patient data, trends, and alerts |
 | 🔔 **Smart Alerts** | Automated notifications for critical cardiac events requiring immediate attention |
 | 🔒 **Secure Health Data** | HIPAA-aware data handling with encrypted transmission and storage |
@@ -56,25 +54,25 @@ CardioSense bridges the gap between wearable health devices and actionable medic
 
 ## 🏗️ System Architecture
 
-The system is built on a **three-tier architecture** comprising a mobile/web presentation layer, a RESTful Node.js backend, and an AI inference engine.
+The system is built on a **three-tier architecture** comprising a web presentation layer, a RESTful Node.js backend, and a MongoDB data store.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        PRESENTATION LAYER                       │
 │                                                                 │
-│   ┌─────────────────────┐        ┌─────────────────────────┐   │
-│   │   Flutter Mobile    │        │   React Web Dashboard   │   │
-│   │   (iOS & Android)   │        │   (Vite + React 19)     │   │
-│   │                     │        │                         │   │
-│   │  • ECG Viewer       │        │  • Patient Overview     │   │
-│   │  • Health Alerts    │        │  • Analytics Charts     │   │
-│   │  • Risk Dashboard   │        │  • Alert Management     │   │
-│   │  • Profile Manager  │        │  • Report Generation    │   │
-│   └──────────┬──────────┘        └──────────┬──────────────┘   │
-└──────────────┼────────────────────────────────┼─────────────────┘
-               │           HTTPS / REST API     │
-               └──────────────┬─────────────────┘
-                              │
+│   ┌─────────────────────────┐                                    │
+│   │   React Web Dashboard   │                                    │
+│   │   (Browser UI)          │                                    │
+│   │                         │                                    │
+│   │  • ECG Viewer           │                                    │
+│   │  • Health Dashboard     │                                    │
+│   │  • Risk Insights        │                                    │
+│   │  • Report Generation    │                                    │
+│   └──────────┬──────────────┘                                    │
+└──────────────┼───────────────────────────────────────────────────┘
+               │           HTTPS / REST API                     │
+               └──────────────┬──────────────────────────────────┘
+```                              │
 ┌─────────────────────────────▼───────────────────────────────────┐
 │                         APPLICATION LAYER                        │
 │                                                                  │
@@ -112,39 +110,23 @@ The system is built on a **three-tier architecture** comprising a mobile/web pre
 
 ## 🔄 Data Flow Diagram
 
-The following diagram shows how ECG data travels from the wearable device through the system to generate a health insight for the user.
+The following diagram shows how user interactions flow through the web dashboard and backend API to generate cardiac insights.
 
 ```mermaid
 flowchart TD
-    A([👤 Patient]) -->|Wears device| B[Wearable / ECG Sensor]
-    B -->|Raw ECG Signal\nBluetooth / BLE| C[Flutter Mobile App]
+    A([👤 User]) -->|Uses browser UI| B[React Web Dashboard]
+    B -->|GET / POST API calls| C[Node.js API Server]
     
-    C -->|POST /api/ecg/stream\nHTTPS| D[Node.js API Server]
+    C --> D{Request Handler}
+    D -->|Auth / Validation| E[Security & Auth]
+    D -->|Data Fetch / Save| F[MongoDB Database]
+    D -->|Analysis Request| G[ECG Analysis Engine]
     
-    D --> E{Signal\nValidator}
-    E -->|Invalid / Noisy| F[❌ Reject & Request Retry]
-    E -->|Valid Signal| G[AI Inference Engine - C++]
+    G --> H[Analysis Results]
+    H --> I[Stored in MongoDB]
+    I --> B
     
-    G --> H[ECG Preprocessing\nNoise Filtering]
-    H --> I[R-Peak Detection\nPan-Tompkins]
-    I --> J[Feature Extraction\nHRV, QRS, PR, QT Intervals]
-    J --> K[Arrhythmia Classifier\nML Model]
-    K --> L[Cardiac Risk Scorer]
-    
-    L --> M{Risk Level}
-    M -->|CRITICAL| N[🚨 Emergency Alert\nPush Notification]
-    M -->|HIGH| O[⚠️ Warning Alert\nPush Notification]
-    M -->|NORMAL| P[✅ Normal Reading\nLogged to DB]
-    
-    N --> Q[(Patient Database)]
-    O --> Q
-    P --> Q
-    
-    Q -->|GET /api/patients/:id| R[React Web Dashboard]
-    Q -->|GET /api/health/summary| C
-    
-    R --> S([👨‍⚕️ Clinician View])
-    C --> A
+    B --> J([Clinician / Patient View])
 ```
 
 ---
@@ -221,24 +203,16 @@ Raw ECG Signal (mV over time)
 | Technology | Purpose |
 |---|---|
 | React 19 | UI framework |
-| Vite 8 | Build tool & dev server |
 | React Router v7 | Client-side routing |
 | Lucide React | Icon library |
 | CSS Modules | Component styling |
-
-### Mobile App
-| Technology | Purpose |
-|---|---|
-| Flutter | Cross-platform mobile framework |
-| Dart | Application language |
-| BLE Packages | Wearable device communication |
 
 ### Backend
 | Technology | Purpose |
 |---|---|
 | Node.js + Express | REST API server |
-| C++ | High-performance AI inference engine |
-| CMake | C++ build system |
+| MongoDB | NoSQL document database |
+| Mongoose | MongoDB object modeling |
 
 ---
 
@@ -250,29 +224,17 @@ Cardiosense-AI/
 ├── 📂 src/                         # React web dashboard source
 │   ├── components/                 # Reusable UI components
 │   ├── pages/                      # Route-level page components
-│   ├── hooks/                      # Custom React hooks
-│   └── utils/                      # Helper utilities
+│   ├── hooks/                     # Custom React hooks
+│   └── utils/                     # Helper utilities
 │
 ├── 📂 backend/                     # Node.js API server
-│   ├── routes/                     # API route handlers
-│   ├── controllers/                # Business logic
-│   ├── models/                     # Data models / schemas
-│   ├── middleware/                 # Auth, validation, logging
-│   └── ai/                         # AI inference engine (C++)
-│
-├── 📂 cardiosense_mobile/          # Flutter mobile application
-│   ├── lib/
-│   │   ├── screens/                # App screens
-│   │   ├── widgets/                # Flutter widgets
-│   │   ├── services/               # API & BLE services
-│   │   └── models/                 # Data models
-│   ├── android/                    # Android-specific configs
-│   └── ios/                        # iOS-specific configs
+│   ├── models/                     # Mongoose models and database connection
+│   ├── uploads/                    # Uploaded files storage
+│   └── server.js                   # Express API server
 │
 ├── 📂 public/                      # Static web assets
 ├── index.html                      # Web entry point
-├── vite.config.js                  # Vite configuration
-├── package.json                    # Node dependencies (web)
+├── package.json                    # Root dependencies
 └── README.md                       # This file
 ```
 
@@ -284,9 +246,7 @@ Cardiosense-AI/
 
 - **Node.js** ≥ 18.x
 - **npm** ≥ 9.x
-- **Flutter SDK** ≥ 3.x
-- **Dart SDK** ≥ 3.x
-- **CMake** ≥ 3.x (for C++ AI engine)
+- **MongoDB** running locally or remotely
 
 ---
 
@@ -304,12 +264,9 @@ cd Cardiosense-AI
 ```bash
 # Install dependencies
 npm install
-
-# Run development server
-npm run dev
 ```
 
-The web dashboard will be available at `http://localhost:5173`
+This repository no longer includes a built-in Vite development server. Use your preferred React build or hosting setup to serve the web dashboard.
 
 ---
 
@@ -328,18 +285,6 @@ npm run backend
 The API server will be available at `http://localhost:5001`
 
 ---
-
-### 4. Run the Flutter Mobile App
-
-```bash
-cd cardiosense_mobile
-
-# Get Flutter dependencies
-flutter pub get
-
-# Run on a connected device or emulator
-flutter run
-```
 
 ---
 
