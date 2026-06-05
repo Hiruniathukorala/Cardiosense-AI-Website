@@ -18,7 +18,7 @@
 
 .report-meta {
   text-align: right;
-  font-size: 13px;
+  font-size: 16px;
 }
 
 .report-meta p {
@@ -32,7 +32,7 @@
 }
 
 .section-title {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
   letter-spacing: 1px;
   margin-bottom: 16px;
@@ -48,7 +48,7 @@
 .info-item {
   display: flex;
   gap: 8px;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .info-item .label {
@@ -66,10 +66,11 @@
 
 .metrics-simple {
   display: flex;
-  gap: 24px;
-  font-size: 13px;
+  gap: 16px;
+  font-size: 16px;
   font-weight: 600;
   justify-content: center;
+  flex-wrap: wrap;
 }
 
 .findings-box {
@@ -78,9 +79,19 @@
   border-radius: 4px;
 }
 
-.findings-box.abnormal {
+.findings-box.abnormal, .findings-box.critical {
   border-color: #EF4444;
   background-color: #FEF2F2;
+}
+
+.findings-box.moderate {
+  border-color: #F59E0B;
+  background-color: #FFFBEB;
+}
+
+.findings-box.normal {
+  border-color: #10B981;
+  background-color: #F0FDF4;
 }
 
 .findings-box h4 {
@@ -88,13 +99,16 @@
   margin-bottom: 12px;
 }
 
+.findings-box.moderate h4 { color: #92400E; }
+.findings-box.normal h4 { color: #065F46; }
+
 .findings-box p {
   margin-bottom: 6px;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .doctor-notes {
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.6;
   margin-bottom: 48px;
 }
@@ -118,7 +132,7 @@
 }
 
 .signature-area p {
-  font-size: 12px;
+  font-size: 16px;
   margin-bottom: 2px;
 }
 

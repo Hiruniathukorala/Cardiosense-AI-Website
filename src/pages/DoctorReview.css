@@ -6,10 +6,11 @@
 }
 
 .patient-list-card {
-  padding: 0;
+  padding: 16px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  max-height: calc(100vh - 160px);
 }
 
 .list-header {
@@ -38,7 +39,7 @@
   background: transparent;
   outline: none;
   width: 100%;
-  font-size: 13px;
+  font-size: 16px;
 }
 
 .patients-list {
@@ -80,12 +81,12 @@
 }
 
 .patient-info-list h4 {
-  font-size: 14px;
+  font-size: 16px;
   margin-bottom: 2px;
 }
 
 .patient-info-list p {
-  font-size: 12px;
+  font-size: 16px;
   color: var(--text-muted);
 }
 

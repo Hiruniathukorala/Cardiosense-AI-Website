@@ -30,5 +30,24 @@ render.experimental.xml
 # Google Services (e.g. APIs or Firebase)
 google-services.json
 
+# Node/Vite dependencies and build output
+node_modules/
+dist/
+.vite/
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.pkl
+
+# Environment files
+*.env
+backend/.env
+.env.local
+.env.*.local
+
+# macOS
+.DS_Store
+
 # Android Profiling
 *.hprof

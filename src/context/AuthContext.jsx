@@ -1,52 +1,44 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-const AuthContext = createContext(null);
-const CURRENT_USER_KEY = 'cardiosense_current_user';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+const USER_KEY = 'cardiosense_current_user';
+const TOKEN_KEY = 'cardiosense_token';
 
-const loadCurrentUser = () => {
-  try {
-    const saved = localStorage.getItem(CURRENT_USER_KEY);
-    return saved ? JSON.parse(saved) : null;
-  } catch (error) {
-    return null;
-  }
-};
+export const getStoredToken = () => localStorage.getItem(TOKEN_KEY);
+
+const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const storedUser = loadCurrentUser();
-    if (storedUser) {
-      setUser(storedUser);
+  const [user, setUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem(USER_KEY);
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
     }
-  }, []);
+  });
 
   useEffect(() => {
     if (user) {
-      localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
+      localStorage.setItem(USER_KEY, JSON.stringify(user));
     } else {
-      localStorage.removeItem(CURRENT_USER_KEY);
+      localStorage.removeItem(USER_KEY);
+      localStorage.removeItem(TOKEN_KEY);
     }
   }, [user]);
 
-  const register = async ({ name, email, password, role }) => {
+  const register = async ({ name, email, password, role, specialization, licenseNumber }) => {
     try {
       const response = await fetch(`${API_BASE}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password, role }),
+        body: JSON.stringify({ name, email, password, role, specialization, licenseNumber }),
       });
-
       const data = await response.json();
-      if (!response.ok) {
-        return { success: false, message: data.message || 'Registration failed.' };
-      }
-
+      if (!response.ok) return { success: false, message: data.message || 'Registration failed.' };
       return { success: true };
-    } catch (error) {
-      return { success: false, message: 'Unable to register. Please try again later.' };
+    } catch {
+      return { success: false, message: 'Unable to register. Check your connection and try again.' };
     }
   };
 
@@ -57,35 +49,66 @@ export const AuthProvider = ({ children }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password, role }),
       });
-
       const data = await response.json();
-      if (!response.ok) {
-        return { success: false, message: data.message || 'Invalid email, password, or role selection.' };
-      }
+      if (!response.ok) return { success: false, message: data.message || 'Login failed.' };
 
       setUser(data.user);
+      if (data.token) localStorage.setItem(TOKEN_KEY, data.token);
       return { success: true };
-    } catch (error) {
-      return { success: false, message: 'Unable to log in. Please try again later.' };
+    } catch {
+      return { success: false, message: 'Unable to log in. Check your connection and try again.' };
     }
   };
 
   const logout = () => {
     setUser(null);
+    localStorage.removeItem(USER_KEY);
+    localStorage.removeItem(TOKEN_KEY);
   };
 
-  const value = useMemo(
-    () => ({ user, login, logout, register }),
-    [user],
-  );
+  const updateProfile = async (fields) => {
+    try {
+      const token = localStorage.getItem(TOKEN_KEY);
+      const userId = user?.id || user?._id;
+      const response = await fetch(`${API_BASE}/api/users/${userId}/profile`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(fields),
+      });
+      const data = await response.json();
+      if (!response.ok) return { success: false, message: data.message || 'Update failed.' };
+      const updated = { ...user, ...data.user };
+      setUser(updated);
+      return { success: true };
+    } catch {
+      return { success: false, message: 'Unable to update profile. Check your connection.' };
+    }
+  };
+
+  const changePassword = async (currentPassword, newPassword) => {
+    try {
+      const token = localStorage.getItem(TOKEN_KEY);
+      const userId = user?.id || user?._id;
+      const response = await fetch(`${API_BASE}/api/users/${userId}/password`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+      const data = await response.json();
+      if (!response.ok) return { success: false, message: data.message || 'Password change failed.' };
+      return { success: true, message: data.message };
+    } catch {
+      return { success: false, message: 'Unable to change password. Check your connection.' };
+    }
+  };
+
+  const value = useMemo(() => ({ user, login, logout, register, updateProfile, changePassword }), [user]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
-  }
-  return context;
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
+  return ctx;
 };

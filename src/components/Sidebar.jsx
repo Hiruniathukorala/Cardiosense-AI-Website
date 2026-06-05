@@ -1,33 +1,68 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Upload, FileText, Users, Activity, Settings, LogOut, MessageSquare } from 'lucide-react';
+import {
+  LayoutDashboard, Upload, Users, Activity,
+  LogOut, MessageSquare, ClipboardList, Stethoscope,
+  HeartPulse, Settings,
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import logo from '../assets/cardiosense-logo.svg';
 import './Sidebar.css';
 
+/* Navigation items per role */
+const CARDIOLOGIST_NAV = [
+  { name: 'Dashboard',     path: '/',        icon: <LayoutDashboard size={20} /> },
+  { name: 'Upload ECG',    path: '/upload',  icon: <Upload size={20} /> },
+  { name: 'Results',       path: '/results', icon: <Activity size={20} /> },
+  { name: 'Doctor Review', path: '/review',  icon: <ClipboardList size={20} /> },
+  { name: 'Patients',      path: '/patients',icon: <Users size={20} /> },
+];
+
+const PATIENT_NAV = [
+  { name: 'Dashboard',    path: '/',        icon: <LayoutDashboard size={20} /> },
+  { name: 'My Results',   path: '/results', icon: <Activity size={20} /> },
+  { name: 'Chat with AI', path: '/chat',    icon: <MessageSquare size={20} /> },
+];
+
+const roleLabel = (role) =>
+  role === 'Cardiologist' ? 'Cardiologist' : 'Patient';
+
+const roleIcon = (role) =>
+  role === 'Cardiologist'
+    ? <Stethoscope size={14} />
+    : <HeartPulse size={14} />;
+
+const avatarInitials = (name = '') =>
+  name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || 'U';
+
 const Sidebar = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const navItems = [
-    { name: 'Dashboard', path: '/', icon: <LayoutDashboard size={20} /> },
-    { name: 'Upload ECG', path: '/upload', icon: <Upload size={20} /> },
-    { name: 'Results', path: '/results', icon: <Activity size={20} /> },
-    { name: 'Chat', path: '/chat', icon: <MessageSquare size={20} /> },
-    { name: 'Patients', path: '/patients', icon: <Users size={20} /> },
-    { name: 'Reports', path: '/reports', icon: <FileText size={20} /> },
-  ];
+
+  const navItems = user?.role === 'Cardiologist' ? CARDIOLOGIST_NAV : PATIENT_NAV;
 
   return (
     <aside className="sidebar">
+      {/* Logo */}
       <div className="sidebar-logo">
         <img src={logo} alt="CardioSense AI logo" className="sidebar-logo-img" />
         <h2>CardioSense AI</h2>
       </div>
-      
+
+      {/* Role badge */}
+      {user && (
+        <div className="sidebar-role-badge">
+          {roleIcon(user.role)}
+          <span>{roleLabel(user.role)}</span>
+        </div>
+      )}
+
+      {/* Navigation */}
       <nav className="sidebar-nav">
         {navItems.map((item) => (
-          <NavLink 
-            key={item.name} 
-            to={item.path} 
+          <NavLink
+            key={item.name}
+            to={item.path}
+            end={item.path === '/'}
             className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
           >
             {item.icon}
@@ -36,27 +71,37 @@ const Sidebar = () => {
         ))}
       </nav>
 
+      {/* Footer — user info + settings + logout */}
       <div className="sidebar-footer">
-        <NavLink to="/login" className="nav-item">
+        <NavLink to="/settings" className="nav-item">
           <Settings size={20} />
           <span>Settings</span>
         </NavLink>
+
         {user ? (
-          <button
-            type="button"
-            onClick={() => {
-              logout();
-              navigate('/login');
-            }}
-            className="nav-item text-danger sidebar-button"
-          >
-            <LogOut size={20} />
-            <span>Logout</span>
-          </button>
+          <>
+            {/* User info card */}
+            <div className="sidebar-user-card">
+              <div className="sidebar-avatar">{avatarInitials(user.name)}</div>
+              <div className="sidebar-user-info">
+                <p className="sidebar-user-name">{user.name}</p>
+                <p className="sidebar-user-email">{user.email}</p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => { logout(); navigate('/login'); }}
+              className="nav-item text-danger sidebar-button"
+            >
+              <LogOut size={20} />
+              <span>Sign Out</span>
+            </button>
+          </>
         ) : (
-          <NavLink to="/register" className="nav-item text-primary">
+          <NavLink to="/login" className="nav-item text-primary">
             <LogOut size={20} />
-            <span>Register</span>
+            <span>Sign In</span>
           </NavLink>
         )}
       </div>
