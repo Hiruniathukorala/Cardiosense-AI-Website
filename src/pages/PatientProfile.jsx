@@ -1,11 +1,12 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, User, HeartPulse, FileText, Calendar,
   CheckCircle, AlertTriangle, Clock, Eye, ClipboardList,
-  Activity, TrendingUp, ShieldAlert,
+  Activity, TrendingUp, ShieldAlert, UploadCloud,
 } from 'lucide-react';
 import { useReports } from '../context/ReportsContext';
+import ECGUploadModal from '../components/ECGUploadModal';
 import './PatientProfile.css';
 
 /* ── helpers ── */
@@ -40,7 +41,8 @@ const initials = (name = '') => name.split(' ').map(w => w[0]).join('').toUpperC
 const PatientProfile = () => {
   const { email } = useParams();
   const navigate  = useNavigate();
-  const { reports } = useReports();
+  const { reports, fetchReports } = useReports();
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
 
   const decodedEmail = decodeURIComponent(email);
 
@@ -89,9 +91,19 @@ const PatientProfile = () => {
     <div className="patient-profile-page">
 
       {/* Back */}
-      <button className="btn btn-outline pp-back" type="button" onClick={() => navigate('/patients')}>
-        <ArrowLeft size={16} /> Back to Patients
-      </button>
+      <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
+        <button className="btn btn-outline pp-back" type="button" onClick={() => navigate('/patients')}>
+          <ArrowLeft size={16} /> Back to Patients
+        </button>
+        <button 
+          className="btn btn-primary" 
+          type="button" 
+          onClick={() => setUploadModalOpen(true)}
+          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+        >
+          <UploadCloud size={16} /> Upload ECG Report
+        </button>
+      </div>
 
       {/* ── Patient Header Card ── */}
       <div className="card pp-header-card">
@@ -258,6 +270,24 @@ const PatientProfile = () => {
           </div>
         )}
       </div>
+
+      {/* ECG Upload Modal */}
+      {patient && (
+        <ECGUploadModal
+          isOpen={uploadModalOpen}
+          onClose={() => setUploadModalOpen(false)}
+          patient={{
+            name: patient.patientName,
+            email: patient.patientEmail,
+            age: patient.patientAge,
+            gender: patient.patientGender,
+          }}
+          onSuccess={() => {
+            fetchReports();
+            setUploadModalOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 };

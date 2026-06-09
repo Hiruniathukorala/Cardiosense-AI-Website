@@ -1,11 +1,12 @@
 import { useState, useMemo } from 'react';
 import {
   Users, Search, AlertTriangle, CheckCircle,
-  ShieldAlert, Eye, RefreshCw, Activity, ClipboardList,
+  ShieldAlert, Eye, RefreshCw, Activity, ClipboardList, UploadCloud,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth }    from '../context/AuthContext';
 import { useReports } from '../context/ReportsContext';
+import ECGUploadModal from '../components/ECGUploadModal';
 import './Patients.css';
 
 /* ── helpers ── */
@@ -38,6 +39,8 @@ const Patients = () => {
   const [search, setSearch]         = useState('');
   const [filterStatus, setFilterStatus] = useState('All');
   const [sortBy, setSortBy]         = useState('latest');
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [selectedPatient, setSelectedPatient] = useState(null);
 
   /* Build patient list from reports assigned to this cardiologist */
   const patients = useMemo(() => {
@@ -121,6 +124,11 @@ const Patients = () => {
   }), [patients]);
 
   const initials = (name='') => name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)||'?';
+
+  const openUploadModal = (patient) => {
+    setSelectedPatient(patient);
+    setUploadModalOpen(true);
+  };
 
   return (
     <div className="patients-page">
@@ -266,7 +274,16 @@ const Patients = () => {
                       )}
                     </td>
                     <td>
-                      <div style={{ display:'flex', gap:'6px' }}>
+                      <div style={{ display:'flex', gap:'6px', flexWrap:'wrap' }}>
+                        <button
+                          type="button"
+                          className="btn btn-outline"
+                          style={{ padding:'4px 10px', fontSize:'12px' }}
+                          onClick={() => openUploadModal(p)}
+                          title="Upload ECG for this patient"
+                        >
+                          <UploadCloud size={13}/> Upload
+                        </button>
                         <button
                           type="button"
                           className="btn btn-outline"
@@ -334,6 +351,14 @@ const Patients = () => {
                 type="button"
                 className="btn btn-outline"
                 style={{ flex:1, fontSize:'13px', padding:'8px' }}
+                onClick={() => openUploadModal(p)}
+              >
+                <UploadCloud size={14}/> Upload
+              </button>
+              <button
+                type="button"
+                className="btn btn-outline"
+                style={{ flex:1, fontSize:'13px', padding:'8px' }}
                 onClick={() => navigate(`/patients/${encodeURIComponent(p.email)}`)}
               >
                 <ClipboardList size={14}/> History
@@ -362,6 +387,21 @@ const Patients = () => {
       </div>
 
       {/* Patient history is now handled by dedicated PatientProfile page at /patients/:email */}
+
+      {/* ECG Upload Modal */}
+      {selectedPatient && (
+        <ECGUploadModal
+          isOpen={uploadModalOpen}
+          onClose={() => {
+            setUploadModalOpen(false);
+            setSelectedPatient(null);
+          }}
+          patient={selectedPatient}
+          onSuccess={() => {
+            fetchReports();
+          }}
+        />
+      )}
     </div>
   );
 };

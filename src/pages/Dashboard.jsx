@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Activity, AlertTriangle, CheckCircle, ArrowRight,
   Upload, ClipboardList, Users, HeartPulse,
@@ -7,6 +7,7 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth }    from '../context/AuthContext';
 import { useReports } from '../context/ReportsContext';
+import PatientECGUploadModal from '../components/PatientECGUploadModal';
 import './Dashboard.css';
 
 /* ─── shared helpers ─── */
@@ -327,6 +328,7 @@ const CardiologistDashboard = ({ user, reports, fetchReports, loading, navigate,
 
 /* ══════════════════════════ PATIENT DASHBOARD ══════════════════════════ */
 const PatientDashboard = ({ user, reports, fetchReports, loading, navigate, lastUpdated }) => {
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const myReports  = [...reports].sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
   const latest     = myReports[0] || null;
   const la         = latest?.analysis || {};
@@ -358,6 +360,14 @@ const PatientDashboard = ({ user, reports, fetchReports, loading, navigate, last
           </p>
         </div>
         <div style={{ display:'flex', gap:'12px' }}>
+          <button 
+            type="button" 
+            className="btn btn-primary" 
+            onClick={() => setUploadModalOpen(true)}
+            style={{ display:'flex', alignItems:'center', gap:'6px' }}
+          >
+            <Upload size={16}/> Upload ECG
+          </button>
           <button type="button" className="btn btn-outline" onClick={fetchReports} disabled={loading} style={{ padding:'8px 14px' }}>
             <RefreshCw size={16} className={loading?'spinner':''}/> Refresh
           </button>
@@ -567,6 +577,16 @@ const PatientDashboard = ({ user, reports, fetchReports, loading, navigate, last
           </div>
         )}
       </div>
+
+      {/* Patient ECG Upload Modal */}
+      <PatientECGUploadModal
+        isOpen={uploadModalOpen}
+        onClose={() => setUploadModalOpen(false)}
+        onSuccess={() => {
+          fetchReports();
+          setUploadModalOpen(false);
+        }}
+      />
     </div>
   );
 };
